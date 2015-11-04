@@ -97,7 +97,7 @@ public class UUIDApi {
 		String[] nameArray = names.toArray(new String[names.size()]);
 		for(int i = 0; i < nameArray.length; i++)
 		{
-			if(nameArray[i].equals(name))
+			if(nameArray[i].equalsIgnoreCase(name))
 				return uuidArray[i];
 		}
 
