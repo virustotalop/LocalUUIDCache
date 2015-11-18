@@ -19,6 +19,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.jnbt.CompoundTag;
 import org.jnbt.NBTInputStream;
 import org.jnbt.Tag;
@@ -27,7 +28,7 @@ public class UUIDApi {
 
 	private static HashMap<UUID, String> ids = new HashMap<UUID, String>();
 
-	protected static void loadUUIDS(File uuidFile, File[] playerFiles)
+	protected static void loadUUIDS(LocalUUIDCache plugin, File uuidFile, File[] playerFiles)
 	{
 		ids = new HashMap<UUID, String>();
 		if(uuidFile.exists())
@@ -44,7 +45,7 @@ public class UUIDApi {
 				Object obj = input.readObject();
 				if(obj == null)
 				{
-					loadUUIDSFirstTime(playerFiles);
+					loadUUIDSFirstTime(plugin, uuidFile, playerFiles);
 				}
 				else
 				{
@@ -56,20 +57,35 @@ public class UUIDApi {
 			}
 			catch (IOException | ClassNotFoundException e) 
 			{
-				loadUUIDSFirstTime(playerFiles);
+				loadUUIDSFirstTime(plugin, uuidFile, playerFiles);
 				e.printStackTrace();
 			}
 		}
 		else
 		{
-			loadUUIDSFirstTime(playerFiles);
+			loadUUIDSFirstTime(plugin, uuidFile, playerFiles);
 		}
 	}
 
 
-	private static void loadUUIDSFirstTime(final File[] files)
+	private static void loadUUIDSFirstTime(LocalUUIDCache plugin, File uuidFile, final File[] files)
 	{
-		
+		if(!plugin.getDataFolder().exists())
+			plugin.getDataFolder().mkdir();
+		else if(uuidFile.exists())
+			uuidFile.delete();
+		else
+		{
+			try 
+			{
+				uuidFile.createNewFile();
+			} 
+			catch (IOException e) 
+			{
+				e.printStackTrace();
+			}
+		}
+
 		for(File file : files)
 		{
 			if(isUUID(file.getName()))

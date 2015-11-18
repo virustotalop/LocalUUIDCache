@@ -1,6 +1,7 @@
 package me.virustotal.localuuidcache;
 
 import java.io.File;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
@@ -22,12 +23,13 @@ public class LocalUUIDCache extends JavaPlugin {
 		this.playerDataFolder = new File(Bukkit.getWorlds().get(0).getWorldFolder().getPath(), "playerdata");
 		this.cachedUUIDFile = new File(this.getDataFolder(), "uuids.dat");
 		Bukkit.getPluginManager().registerEvents(new LoginListener(), this);
-		UUIDApi.loadUUIDS(this.cachedUUIDFile, this.playerDataFolder.listFiles());
+		UUIDApi.loadUUIDS(this, this.cachedUUIDFile, this.playerDataFolder.listFiles());
 		Bukkit.getScheduler().scheduleAsyncRepeatingTask(this, new Runnable()
 		{
 			@Override
 			public void run()
 			{
+				logger.log(Level.INFO, "UUIDS saved to file!");
 				UUIDApi.saveData(cachedUUIDFile);
 			}
 		}, 1L, 600L);
