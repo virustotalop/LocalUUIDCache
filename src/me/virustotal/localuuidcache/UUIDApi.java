@@ -1,8 +1,17 @@
 package me.virustotal.localuuidcache;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
@@ -18,14 +27,55 @@ public class UUIDApi {
 
 	private static HashMap<UUID, String> ids = new HashMap<UUID, String>();
 
-	protected static void loadUUIDS(final File[] files)
+	protected static void loadUUIDS(File uuidFile, File[] playerFiles)
 	{
 		ids = new HashMap<UUID, String>();
+		if(uuidFile.exists())
+		{
+			InputStream file = null;
+			InputStream buffer = null;
+			ObjectInput input = null;
+			
+			try
+			{
+				file = new FileInputStream(uuidFile);
+				buffer = new BufferedInputStream(file);
+				input = new ObjectInputStream(buffer);
+				Object obj = input.readObject();
+				if(obj == null)
+				{
+					loadUUIDSFirstTime(playerFiles);
+				}
+				else
+				{
+					ids = (HashMap<UUID, String>) obj;
+				}
+				input.close();
+				file.close();
+				buffer.close();
+			}
+			catch (IOException | ClassNotFoundException e) 
+			{
+				loadUUIDSFirstTime(playerFiles);
+				e.printStackTrace();
+			}
+		}
+		else
+		{
+			loadUUIDSFirstTime(playerFiles);
+		}
+	}
+
+
+	private static void loadUUIDSFirstTime(final File[] files)
+	{
+		
 		for(File file : files)
 		{
 			if(isUUID(file.getName()))
 			{
-				try {
+				try 
+				{
 					FileInputStream fStream = new FileInputStream(file);
 					NBTInputStream stream = new NBTInputStream(fStream);
 					Tag playerData = stream.readTag();
@@ -81,8 +131,24 @@ public class UUIDApi {
 		ids.put(uuid, player.getName());
 	}
 
-	protected static void clearData()
+	protected static void saveData(File uuidFile)
 	{
+		try 
+		{
+			if(ids == null)
+				ids = new HashMap<UUID, String>();
+			
+			OutputStream file = new FileOutputStream(uuidFile);
+			OutputStream buffer = new BufferedOutputStream(file);
+			ObjectOutput output = new ObjectOutputStream(buffer);
+			output.writeObject(ids);
+			output.close();
+		}  
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+		
 		ids = null;
 	}
 
